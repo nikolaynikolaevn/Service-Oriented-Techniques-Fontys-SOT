@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+application {
+    mainClassName = 'fontys.sot.rest.client.WebshopClient'
+}
+
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.11
+
+repositories {
+    mavenCentral()
+    flatDir { // include all *.jar files from local "lib" directory (e.g. customerModel.jar, productModel.jar, orderModel.jar)
+        dirs 'lib'
+    }
+}
+
+dependencies {
+    // compile all *.jar files from local "lib" directory (e.g. customerModel.jar, productModel.jar, orderModel.jar)
+    compile files(fileTree(dir: 'lib', includes: ['*.jar']))
+
+    compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.28'
+    compile group: 'org.glassfish.jersey.bundles', name: 'jaxrs-ri', version: '2.28'
+}
+
+jar { // make executable client.jar file and copy all dependencies in it
+    manifest {
+        attributes 'Main-Class': 'fontys.sot.rest.client.WebshopClient'
+    }
+    archiveFileName = 'client.jar'
+
+    // add all dependencies to the executable .jar file
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}

@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+version '1.0-SNAPSHOT'
+sourceCompatibility = 1.11
+
+repositories {
+    mavenCentral()
+	flatDir { // include all *.jar files from local "lib" directory (e.g. customerModel.jar, productModel.jar)
+        dirs 'lib'
+    }
+}
+
+war {
+    archiveFileName = 'orders.war'
+}
+
+dependencies {
+	// compile all *.jar files from local "lib" directory (e.g. customerModel.jar, productModel.jar)
+	compile files(fileTree(dir: 'lib', includes: ['*.jar']))
+	
+    // https://mvnrepository.com/artifact/javax.activation/activation
+    compile group: 'javax.activation', name: 'activation', version: '1.1.1'
+    // https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-servlet
+    compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.30.1'
+    // https://mvnrepository.com/artifact/org.glassfish.jersey.bundles/jaxrs-ri
+    compile group: 'org.glassfish.jersey.bundles', name: 'jaxrs-ri', version: '2.30.1'
+    compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.25.1'
+}
+
+task createModelJar(type: Jar, dependsOn: compileJava) {
+    archiveFileName = "orderModel.jar"
+
+    from sourceSets.main.output
+    include "fontys/sot/rest/service/model/*"
+
+    println "created orderModel.jar from fontys/sot/rest/service/model/*.class"
+}
+
+// assuming modules are in directories “project/order-service/” and “project/client-1/”
+// copy “order-service/build/libs/orderModel.jar” to “client-1/lib/orderModel.jar”
+task copyModelJarToClient(type: Copy, dependsOn:[createModelJar]) {
+
+    from "${buildDir}/libs/orderModel.jar"
+    into "../client-1/lib/"
+
+    println "copied "+ "${buildDir}/libs/orderModel.jar" + " into " + "../client-1/lib/"
+}
